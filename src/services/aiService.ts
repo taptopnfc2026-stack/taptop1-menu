@@ -1,8 +1,7 @@
 import type { MenuCategory, MenuItem } from '../types/menu';
 
-// Use Cloudflare Worker proxy to hide API key (recommended for production)
-// Set VITE_AI_PROXY_URL in .env with your Worker URL, e.g. https://taptop-menu-ai.your-subdomain.workers.dev
-const AI_PROXY_URL = import.meta.env.VITE_AI_PROXY_URL || '';
+// Cloudflare Worker proxy URL (OpenAI API key is stored in the Worker, not in frontend)
+const AI_PROXY_URL = import.meta.env.VITE_AI_PROXY_URL || 'https://taptop-menu-ai.taptopnfc2026.workers.dev';
 
 // Direct OpenAI API (only used as fallback for local dev without proxy)
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
