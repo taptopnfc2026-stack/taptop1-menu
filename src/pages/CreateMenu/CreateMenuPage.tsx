@@ -29,6 +29,11 @@ import { currencies } from '../../types/menu';
 import { AllergenSelector, detectAllergens, EU_ALLERGENS } from '@/components/menu/AllergenSelector';
 import { TagSelector, TAG_GROUPS } from '@/components/menu/TagSelector';
 
+function getMenuUrl(menuId: string): string {
+  const basePath = window.location.pathname.split('#')[0];
+  return `${window.location.origin}${basePath}#/menu/${menuId}`;
+}
+
 // Supported languages with native names
 export const supportedLanguages = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
@@ -675,7 +680,7 @@ const CreateMenuPage: React.FC = () => {
 
   // Save menu to history
   const saveMenuToHistory = (menu: Menu) => {
-    const menuLink = `${window.location.origin}/menu/${menu.id}`;
+    const menuLink = getMenuUrl(menu.id);
     const historyItem: MenuHistoryItem = {
       id: menu.id,
       storeName: menu.storeName,
@@ -749,7 +754,7 @@ const CreateMenuPage: React.FC = () => {
   // Copy link
   const copyMenuLink = () => {
     if (generatedMenu) {
-      const link = `${window.location.origin}/menu/${generatedMenu.id}`;
+      const link = getMenuUrl(generatedMenu.id);
       navigator.clipboard.writeText(link);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
@@ -1369,7 +1374,7 @@ const CreateMenuPage: React.FC = () => {
                   <input
                     type="text"
                     readOnly
-                    value={`${window.location.origin}/menu/${generatedMenu.id}`}
+                    value={getMenuUrl(generatedMenu.id)}
                     className="flex-1 text-sm text-gray-700 bg-transparent outline-none"
                   />
                   <button
@@ -1384,7 +1389,7 @@ const CreateMenuPage: React.FC = () => {
               
               {/* QR Code */}
               <div className="bg-white p-4 rounded-2xl shadow-lg inline-block mb-6">
-                <QRCodeCanvas value={`${window.location.origin}/menu/${generatedMenu.id}`} size={180} />
+                <QRCodeCanvas value={getMenuUrl(generatedMenu.id)} size={180} />
               </div>
               
               <div className="flex gap-3">
