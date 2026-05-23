@@ -7,6 +7,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { auth, isConfigured } from '@/lib/firebase';
@@ -26,6 +28,7 @@ function mapFirebaseUser(fbUser: FirebaseUser): User {
 
 // ===== Firebase Auth =====
 async function firebaseLogin(email: string, password: string): Promise<User> {
+  await setPersistence(auth, browserLocalPersistence);
   const cred = await signInWithEmailAndPassword(auth, email, password);
   const user = mapFirebaseUser(cred.user);
   await saveUserData(user.id, user);
@@ -33,6 +36,7 @@ async function firebaseLogin(email: string, password: string): Promise<User> {
 }
 
 async function firebaseSignUp(email: string, password: string, name: string): Promise<User> {
+  await setPersistence(auth, browserLocalPersistence);
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: name });
   const user: User = {
@@ -45,6 +49,8 @@ async function firebaseSignUp(email: string, password: string, name: string): Pr
 
 async function firebaseGoogleLogin(): Promise<User> {
   const provider = new GoogleAuthProvider();
+  // Ensure auth state persists across page refreshes
+  await setPersistence(auth, browserLocalPersistence);
   const cred = await signInWithPopup(auth, provider);
   const user = mapFirebaseUser(cred.user);
   await saveUserData(user.id, user);

@@ -1,5 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence, connectAuthEmulator, type Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -22,6 +22,9 @@ try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+
+  // Persist auth state across page refreshes (stored in IndexedDB/localStorage)
+  setPersistence(auth, browserLocalPersistence).catch(console.warn);
 
   // Use Firebase emulator in development (optional)
   if (import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
