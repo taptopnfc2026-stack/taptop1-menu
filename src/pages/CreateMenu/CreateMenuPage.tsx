@@ -28,6 +28,7 @@ import type { MenuItem, MenuCategory, Menu } from '../../types/menu';
 import { currencies } from '../../types/menu';
 import { AllergenSelector, detectAllergens, EU_ALLERGENS } from '@/components/menu/AllergenSelector';
 import { TagSelector, TAG_GROUPS } from '@/components/menu/TagSelector';
+import { analyzeMenuImage as analyzeWithAI } from '@/services/aiService';
 
 function getMenuUrl(menuId: string): string {
   const basePath = window.location.pathname.split('#')[0];
@@ -88,6 +89,12 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Hero Subtitle': 'Build a beautiful menu for your restaurant',
     'AI Title': 'AI Menu Generation',
     'AI Desc': 'Upload your existing menu and let AI do the work',
+    'Select Image First': 'Please select a menu image first',
+    'Image Selected': 'Image selected ✓',
+    'Change Image': 'Change Image',
+    'AI Error': 'AI analysis failed. Please try again.',
+    'No Menu Detected': 'No menu detected in image. Try a clearer photo.',
+    'Processing...': 'Processing...',
     'Customize Title': 'Customize Freely',
     'Customize Desc': 'Edit anytime with our intuitive interface',
     'No categories': 'No categories yet',
@@ -141,6 +148,12 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Hero Subtitle': '为您的餐厅打造精美菜单',
     'AI Title': 'AI 菜单生成',
     'AI Desc': '上传现有菜单，AI 自动完成',
+    'Select Image First': '请先选择菜单图片',
+    'Image Selected': '图片已选择 ✓',
+    'Change Image': '更换图片',
+    'AI Error': 'AI 分析失败，请重试。',
+    'No Menu Detected': '未检测到菜单，请尝试更清晰的照片。',
+    'Processing...': '处理中...',
     'Customize Title': '自由编辑',
     'Customize Desc': '直观的界面随时修改',
     'No categories': '暂无分类',
@@ -194,6 +207,12 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Hero Subtitle': 'Créez un magnifique menu pour votre restaurant',
     'AI Title': 'Génération par IA',
     'AI Desc': 'Téléchargez votre menu existant',
+    'Select Image First': 'Veuillez d\'abord sélectionner une image',
+    'Image Selected': 'Image sélectionnée ✓',
+    'Change Image': 'Changer l\'image',
+    'AI Error': 'Échec de l\'analyse IA. Réessayez.',
+    'No Menu Detected': 'Aucun menu détecté. Essayez une photo plus claire.',
+    'Processing...': 'Traitement...',
     'Customize Title': 'Personnalisez',
     'Customize Desc': 'Modifiez à tout moment',
     'No categories': 'Pas de catégories',
@@ -247,6 +266,12 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Hero Subtitle': 'Erstellen Sie ein schönes Menü für Ihr Restaurant',
     'AI Title': 'KI-Menügenerierung',
     'AI Desc': 'Laden Sie Ihr bestehendes Menü hoch',
+    'Select Image First': 'Bitte wählen Sie zuerst ein Bild aus',
+    'Image Selected': 'Bild ausgewählt ✓',
+    'Change Image': 'Bild ändern',
+    'AI Error': 'KI-Analyse fehlgeschlagen. Bitte erneut versuchen.',
+    'No Menu Detected': 'Kein Menü erkannt. Klareres Foto versuchen.',
+    'Processing...': 'Verarbeitung...',
     'Customize Title': 'Frei anpassen',
     'Customize Desc': 'Jederzeit bearbeiten',
     'No categories': 'Keine Kategorien',
@@ -300,6 +325,12 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Hero Subtitle': 'Cree un hermoso menú para su restaurante',
     'AI Title': 'Generación con IA',
     'AI Desc': 'Suba su menú existente',
+    'Select Image First': 'Primero seleccione una imagen',
+    'Image Selected': 'Imagen seleccionada ✓',
+    'Change Image': 'Cambiar imagen',
+    'AI Error': 'Análisis IA fallido. Intente de nuevo.',
+    'No Menu Detected': 'No se detectó menú. Intente una foto más clara.',
+    'Processing...': 'Procesando...',
     'Customize Title': 'Personalizar',
     'Customize Desc': 'Edite en cualquier momento',
     'No categories': 'Sin categorías',
@@ -353,6 +384,12 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Hero Subtitle': '餐厅の美しいメニューを作成',
     'AI Title': 'AIメニュー生成',
     'AI Desc': '既存のメニューをアップロード',
+    'Select Image First': 'まず画像を選択してください',
+    'Image Selected': '画像を選択しました ✓',
+    'Change Image': '画像を変更',
+    'AI Error': 'AI分析に失敗しました。再試行してください。',
+    'No Menu Detected': 'メニューが検出されません。より鮮明な写真をお試しください。',
+    'Processing...': '処理中...',
     'Customize Title': 'カスタマイズ',
     'Customize Desc': 'いつでも編集可能',
     'No categories': 'カテゴリーなし',
@@ -406,6 +443,12 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Hero Subtitle': '레스토랑을 위한 아름다운 메뉴를 만드세요',
     'AI Title': 'AI 메뉴 생성',
     'AI Desc': '기존 메뉴를 업로드하세요',
+    'Select Image First': '먼저 이미지를 선택하세요',
+    'Image Selected': '이미지 선택됨 ✓',
+    'Change Image': '이미지 변경',
+    'AI Error': 'AI 분석에 실패했습니다. 다시 시도하세요.',
+    'No Menu Detected': '메뉴가 감지되지 않았습니다. 더 선명한 사진을 시도하세요.',
+    'Processing...': '처리 중...',
     'Customize Title': '자유롭게 편집',
     'Customize Desc': '언제든지 수정 가능',
     'No categories': '카테고리 없음',
@@ -434,19 +477,6 @@ const t = (key: string, lang: string): string => {
 
 // Generate unique ID
 const generateId = () => Math.random().toString(36).substring(2, 15);
-
-// Translation mock data
-const translations: Record<string, Record<string, { name: string; description: string }>> = {
-  'Spring Rolls': { zh: { name: '春卷', description: '酥脆蔬菜卷' }, fr: { name: 'Rouleaux de Printemps', description: 'Rouleaux de légumes croustillants' }, de: { name: 'Frühlingsrollen', description: 'Knusprige Gemüserollen' }, ja: { name: '春巻き', description: 'サクサク野菜巻き' }, ko: { name: '춘권', description: '바삭한 야채말이' }, es: { name: 'Rollitos Primavera', description: 'Rollitos de verduras' } },
-  'Chicken Wings': { zh: { name: '鸡翅', description: '水牛城风格' }, fr: { name: 'Ailes de Poulet', description: 'Style Buffalo' }, de: { name: 'Hähnchenflügel', description: 'Buffalo Style' }, ja: { name: 'チキンバー', description: 'バッファロー風' }, ko: { name: '닭날개', description: '버팔로 스타일' }, es: { name: 'Alitas de Pollo', description: 'Estilo Buffalo' } },
-  'Grilled Steak': { zh: { name: '烤牛排', description: '优质牛肉配时蔬' }, fr: { name: 'Steak Grillé', description: 'Bœuf premium' }, de: { name: 'Gegrilltes Steak', description: 'Premium-Rindfleisch' }, ja: { name: 'グリルステーキ', description: 'プレミアムビーフ' }, ko: { name: '그릴 스테이크', description: '프리미엄 소고기' }, es: { name: 'Filete a la Parrilla', description: 'Carne premium' } },
-  'Signature Pasta': { zh: { name: '招牌意面', description: '新鲜意面配特制酱汁' }, fr: { name: 'Pâtes Signature', description: 'Pâtes fraîches' }, de: { name: 'Signatur-Pasta', description: 'Frische Pasta' }, ja: { name: 'シグネチャーパスタ', description: '新鮮パスタ' }, ko: { name: '시그니처 파스타', description: '신선한 파스타' }, es: { name: 'Pasta Especial', description: 'Pasta fresca' } },
-  'Chocolate Cake': { zh: { name: '巧克力蛋糕', description: '浓郁巧克力' }, fr: { name: 'Gâteau au Chocolat', description: 'Chocolat riche' }, de: { name: 'Schokoladenkuchen', description: 'Reichhaltige Schokolade' }, ja: { name: 'チョコレートケーキ', description: '濃厚な巧克力' }, ko: { name: '초콜릿 케이크', description: '진한 초콜릿' }, es: { name: 'Pastel de Chocolate', description: 'Chocolate intenso' } },
-  'Fresh Juice': { zh: { name: '鲜榨果汁', description: '橙汁或苹果汁' }, fr: { name: 'Jus Frais', description: 'Orange ou pomme' }, de: { name: 'Frischer Saft', description: 'Orange oder Apfel' }, ja: { name: '新鮮なジュース', description: 'オレンジまたはりんご' }, ko: { name: '생과일주스', description: '오렌지 또는 사과' }, es: { name: 'Jugo Fresco', description: 'Naranja o manzana' } },
-  'Coffee': { zh: { name: '咖啡', description: '浓缩或卡布奇诺' }, fr: { name: 'Café', description: 'Espresso' }, de: { name: 'Kaffee', description: 'Espresso' }, ja: { name: 'コーヒー', description: 'エスプレッソ' }, ko: { name: '커피', description: '에스프레소' }, es: { name: 'Café', description: 'Espresso' } },
-  'French Fries': { zh: { name: '薯条', description: '酥脆金黄' }, fr: { name: 'Frites', description: 'Croustillantes' }, de: { name: 'Pommes Frites', description: 'Knusprig' }, ja: { name: 'フレンチフライ', description: 'サクサク' }, ko: { name: '프렌치 프라이', description: '바삭한' }, es: { name: 'Papas Fritas', description: 'Crujientes' } },
-  'Salad': { zh: { name: '沙拉', description: '新鲜田园沙拉' }, fr: { name: 'Salade', description: 'Salade frais' }, de: { name: 'Salat', description: 'Frischer Salat' }, ja: { name: 'サラダ', description: '新鮮なサラダ' }, ko: { name: '샐러드', description: '신선한 샐러드' }, es: { name: 'Ensalada', description: 'Ensalada fresca' } },
-};
 
 // Menu history type
 interface MenuHistoryItem {
@@ -524,66 +554,76 @@ const CreateMenuPage: React.FC = () => {
   const getCurrencyInfo = (code: string) => currencies.find(c => c.code === code);
   const currentLang = getLanguageInfo(storeLanguage);
 
-  // Simulate AI menu analysis
+  // AI image analysis
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [aiProgressMessage, setAiProgressMessage] = useState('');
+
+  // Handle menu image upload for AI analysis
+  const handleMenuImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 20MB for OpenAI API)
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Image too large. Please use an image under 20MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setUploadedImage(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Real AI menu analysis using OpenAI GPT-4o
   const analyzeMenuImage = async () => {
+    if (!uploadedImage) {
+      alert(t('Select Image First', storeLanguage));
+      return;
+    }
+
+    const hasApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!hasApiKey) {
+      alert('OpenAI API key not configured. Add VITE_OPENAI_API_KEY to your .env file.\n\nGet a key at: https://platform.openai.com/api-keys');
+      return;
+    }
+
     setIsAnalyzing(true);
     setAnalyzeProgress(0);
+    setAiProgressMessage(t('Processing...', storeLanguage));
 
-    const progressInterval = setInterval(() => {
-      setAnalyzeProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
+    try {
+      const categories = await analyzeWithAI(
+        uploadedImage,
+        ['en', 'zh', 'fr', 'de', 'es', 'ja', 'ko'],
+        (progress, message) => {
+          setAnalyzeProgress(progress);
+          setAiProgressMessage(message);
         }
-        return prev + Math.random() * 15;
-      });
-    }, 300);
+      );
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      // If storeName was detected, use it
+      // storeName is returned in the result but currently handled via categories only
+      setCategories(categories);
+      setExpandedCategories(categories.map(c => c.id));
+      setAnalyzeProgress(100);
+      setAiProgressMessage('');
 
-    const defaultCats = ['Appetizers', 'Main Course', 'Desserts', 'Beverages', 'Sides'];
-    const mockGeneratedCategories: MenuCategory[] = defaultCats.map((cat) => {
-      let items: MenuItem[] = [];
-      
-      if (cat === 'Appetizers') {
-        items = [
-          { id: generateId(), name: 'Spring Rolls', description: 'Crispy vegetable rolls', price: 8.99, category: cat, translations: { en: { name: 'Spring Rolls', description: 'Crispy vegetable rolls' }, ...translations['Spring Rolls'] } },
-          { id: generateId(), name: 'Chicken Wings', description: 'Buffalo style wings', price: 10.99, category: cat, translations: { en: { name: 'Chicken Wings', description: 'Buffalo style wings' }, ...translations['Chicken Wings'] } },
-        ];
-      } else if (cat === 'Main Course') {
-        items = [
-          { id: generateId(), name: 'Grilled Steak', description: 'Premium beef with vegetables', price: 24.99, category: cat, translations: { en: { name: 'Grilled Steak', description: 'Premium beef with vegetables' }, ...translations['Grilled Steak'] } },
-          { id: generateId(), name: 'Signature Pasta', description: 'Fresh pasta with special sauce', price: 18.99, category: cat, translations: { en: { name: 'Signature Pasta', description: 'Fresh pasta with special sauce' }, ...translations['Signature Pasta'] } },
-        ];
-      } else if (cat === 'Desserts') {
-        items = [
-          { id: generateId(), name: 'Chocolate Cake', description: 'Rich chocolate cake', price: 8.99, category: cat, translations: { en: { name: 'Chocolate Cake', description: 'Rich chocolate cake' }, ...translations['Chocolate Cake'] } },
-        ];
-      } else if (cat === 'Beverages') {
-        items = [
-          { id: generateId(), name: 'Fresh Juice', description: 'Orange or apple', price: 5.99, category: cat, translations: { en: { name: 'Fresh Juice', description: 'Orange or apple' }, ...translations['Fresh Juice'] } },
-          { id: generateId(), name: 'Coffee', description: 'Espresso or cappuccino', price: 4.99, category: cat, translations: { en: { name: 'Coffee', description: 'Espresso or cappuccino' }, ...translations['Coffee'] } },
-        ];
+      // Show success briefly
+      await new Promise(resolve => setTimeout(resolve, 300));
+    } catch (error: any) {
+      console.error('AI analysis failed:', error);
+      const msg = error.message || '';
+      if (msg.includes('No menu items detected')) {
+        alert(t('No Menu Detected', storeLanguage));
       } else {
-        items = [
-          { id: generateId(), name: 'French Fries', description: 'Crispy golden fries', price: 4.99, category: cat, translations: { en: { name: 'French Fries', description: 'Crispy golden fries' }, ...translations['French Fries'] } },
-          { id: generateId(), name: 'Salad', description: 'Fresh garden salad', price: 7.99, category: cat, translations: { en: { name: 'Salad', description: 'Fresh garden salad' }, ...translations['Salad'] } },
-        ];
+        alert(t('AI Error', storeLanguage));
       }
-      
-      return {
-        id: generateId(),
-        name: cat,
-        translations: { en: cat },
-        items,
-      };
-    });
-
-    setCategories(mockGeneratedCategories);
-    setExpandedCategories(mockGeneratedCategories.map(c => c.id));
-    setAnalyzeProgress(100);
-    setIsAnalyzing(false);
-    clearInterval(progressInterval);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   // Add new category
@@ -1014,16 +1054,33 @@ const CreateMenuPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-orange-300 transition-colors cursor-pointer"
+          <div className={`border-2 border-dashed rounded-xl p-4 text-center transition-colors cursor-pointer relative ${uploadedImage ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-orange-300'}`}
                onClick={() => fileInputRef.current?.click()}>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               className="hidden"
+              onChange={handleMenuImageUpload}
             />
-            <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 font-medium">{t('Upload menu image', storeLanguage)}</p>
+            {uploadedImage ? (
+              <div className="relative">
+                <img src={uploadedImage} alt="Uploaded menu" className="max-h-48 mx-auto rounded-lg object-contain" />
+                <p className="text-sm text-orange-600 font-medium mt-2">{t('Image Selected', storeLanguage)}</p>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setUploadedImage(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                  className="text-xs text-gray-500 underline mt-1 hover:text-gray-700"
+                >
+                  {t('Change Image', storeLanguage)}
+                </button>
+              </div>
+            ) : (
+              <>
+                <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-600 font-medium">{t('Upload menu image', storeLanguage)}</p>
+                <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP · Max 20MB</p>
+              </>
+            )}
           </div>
 
           <button
@@ -1037,9 +1094,13 @@ const CreateMenuPage: React.FC = () => {
 
           {isAnalyzing && (
             <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-purple-600 font-medium">{aiProgressMessage}</span>
+                <span className="text-sm text-purple-400">{analyzeProgress}%</span>
+              </div>
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
                   style={{ width: `${analyzeProgress}%` }}
                 />
               </div>
