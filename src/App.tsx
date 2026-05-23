@@ -2,6 +2,10 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { StoreProvider } from '@/context/StoreContext';
 import { AnalyticsProvider } from '@/context/AnalyticsContext';
+import { CookieConsentProvider } from '@/context/CookieConsentContext';
+import { CookieBanner } from '@/components/gdpr/CookieBanner';
+import { PrivacyPolicyPage } from '@/pages/Privacy/PrivacyPolicyPage';
+import { ImprintPage } from '@/pages/Privacy/ImprintPage';
 import { Layout } from '@/components/layout/Layout';
 import { LoginPage } from '@/pages/Login/LoginPage';
 import { HomePage } from '@/pages/Home/HomePage';
@@ -41,6 +45,8 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/store/:storeId" element={<StoreLandingPage />} />
       <Route path="/menu/:menuId" element={<MenuDisplayPage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/imprint" element={<ImprintPage />} />
       
       {/* Protected routes with layout */}
       <Route element={<Layout />}>
@@ -72,13 +78,16 @@ function AppRoutes() {
 export default function App() {
   return (
     <HashRouter>
-      <AuthProvider>
-        <StoreProvider>
-          <AnalyticsProvider>
-            <AppRoutes />
-          </AnalyticsProvider>
-        </StoreProvider>
-      </AuthProvider>
+      <CookieConsentProvider>
+        <AuthProvider>
+          <StoreProvider>
+            <AnalyticsProvider>
+              <AppRoutes />
+              <CookieBanner />
+            </AnalyticsProvider>
+          </StoreProvider>
+        </AuthProvider>
+      </CookieConsentProvider>
     </HashRouter>
   );
 }

@@ -565,11 +565,11 @@ export function HomePage() {
             </div>
             
             <div>
-              <h4 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Legal</h4>
+              <h4 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Legal / 法律</h4>
               <ul className="space-y-2 sm:space-y-3 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookie Policy</a></li>
+                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy / 隐私政策</Link></li>
+                <li><Link to="/imprint" className="hover:text-white transition-colors">Imprint / 公司信息</Link></li>
+                <li><Link to="/privacy#cookies" className="hover:text-white transition-colors">Cookie Policy / Cookie 政策</Link></li>
               </ul>
             </div>
           </div>

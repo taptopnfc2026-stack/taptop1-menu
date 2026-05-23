@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '@/types';
+import { authService } from '@/services/authService';
 
 interface AuthState {
   user: User | null;
@@ -63,18 +64,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('taptopmenu_user');
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
+    // Use Firebase auth state listener when configured, fall back to localStorage
+    const unsubscribe = authService.onAuthStateChange((user) => {
+      if (user) {
         dispatch({ type: 'LOGIN', payload: user });
-      } catch {
-        localStorage.removeItem('taptopmenu_user');
-        dispatch({ type: 'SET_LOADING', payload: false });
+      } else {
+        // Check localStorage fallback
+        const storedUser = localStorage.getItem('taptopmenu_user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            dispatch({ type: 'LOGIN', payload: parsedUser });
+          } catch {
+            localStorage.removeItem('taptopmenu_user');
+            dispatch({ type: 'SET_LOADING', payload: false });
+          }
+        } else {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
       }
-    } else {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const login = (user: User) => {
@@ -82,7 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'LOGIN', payload: user });
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch { /* ignore */ }
     localStorage.removeItem('taptopmenu_user');
     dispatch({ type: 'LOGOUT' });
   };
