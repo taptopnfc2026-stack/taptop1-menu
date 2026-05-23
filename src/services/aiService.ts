@@ -1,5 +1,10 @@
 import type { MenuCategory, MenuItem } from '../types/menu';
 
+// Use Cloudflare Worker proxy to hide API key (recommended for production)
+// Set VITE_AI_PROXY_URL in .env with your Worker URL, e.g. https://taptop-menu-ai.your-subdomain.workers.dev
+const AI_PROXY_URL = import.meta.env.VITE_AI_PROXY_URL || '';
+
+// Direct OpenAI API (only used as fallback for local dev without proxy)
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
 // Supported languages for menu translation
@@ -7,10 +12,14 @@ const TARGET_LANGUAGES = ['en', 'zh', 'fr', 'de', 'es', 'it', 'ja', 'ko'];
 
 function getApiKey(): string {
   const key = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!key) {
-    throw new Error('OpenAI API key not configured. Set VITE_OPENAI_API_KEY in your .env file.');
+  if (!key && !AI_PROXY_URL) {
+    throw new Error('No AI endpoint configured. Set VITE_AI_PROXY_URL or VITE_OPENAI_API_KEY in your .env file.');
   }
-  return key;
+  return key || '';
+}
+
+function isUsingProxy(): boolean {
+  return !!AI_PROXY_URL;
 }
 
 interface AIAnalysisResult {
@@ -73,7 +82,7 @@ function generateId(): string {
 }
 
 /**
- * Analyze a menu image using OpenAI GPT-4o Vision.
+ * Analyze a menu image using OpenAI GPT-4o Vision (via proxy for production).
  * Extracts menu items, categories, prices, and translates to multiple languages.
  * 
  * GDPR Note: Images are sent to OpenAI API for processing only.
@@ -152,43 +161,63 @@ Target languages for translation: ${targetLangs.join(', ')}`;
 
   onProgress?.(30, 'Analyzing menu with AI...');
 
-  const response = await fetch(OPENAI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getApiKey()}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageBase64,
-                detail: 'high',
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: 4096,
-      temperature: 0.3,
-      response_format: { type: 'json_object' },
-    }),
-  });
+  let data: any;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`OpenAI API error (${response.status}): ${errorText}`);
+  if (isUsingProxy()) {
+    // Route through Cloudflare Worker proxy (no API key in frontend)
+    const proxyResponse = await fetch(AI_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageBase64, prompt, model: 'gpt-4o' }),
+    });
+
+    if (!proxyResponse.ok) {
+      const errorData = await proxyResponse.json().catch(() => ({}));
+      throw new Error(`AI proxy error (${proxyResponse.status}): ${errorData.error || 'Unknown error'}`);
+    }
+
+    data = await proxyResponse.json();
+  } else {
+    // Direct OpenAI call (local dev only)
+    const response = await fetch(OPENAI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getApiKey()}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageBase64,
+                  detail: 'high',
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 4096,
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI API error (${response.status}): ${errorText}`);
+    }
+
+    data = await response.json();
   }
 
   onProgress?.(70, 'Processing results...');
 
-  const data = await response.json();
   const content = data.choices?.[0]?.message?.content;
 
   if (!content) {
