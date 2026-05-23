@@ -122,28 +122,44 @@ const MenuDisplayPage: React.FC = () => {
   const [showOrderSummary, setShowOrderSummary] = useState(false);
 
   useEffect(() => {
-    const savedMenu = localStorage.getItem('currentMenu');
-    if (savedMenu) {
-      try {
-        const parsedMenu = JSON.parse(savedMenu);
-        parsedMenu.createdAt = new Date(parsedMenu.createdAt);
-        parsedMenu.updatedAt = new Date(parsedMenu.updatedAt);
-        setMenu(parsedMenu);
-        setExpandedCategories(parsedMenu.categories.map((c: any) => c.id));
-        
-        // 检查是否首次访问
-        const hasSelectedLang = sessionStorage.getItem('customerLangSelected');
-        if (!hasSelectedLang) {
-          setShowLangPrompt(true);
-        } else {
-          const savedLang = sessionStorage.getItem('customerLang');
-          setCustomerLang(savedLang || parsedMenu.storeLanguage || 'en');
+    // Try to load menu by menuId first
+    let savedMenu = null;
+    if (menuId) {
+      const menuById = localStorage.getItem(`menu_${menuId}`);
+      if (menuById) {
+        try {
+          savedMenu = JSON.parse(menuById);
+        } catch (e) {
+          // ignore
         }
-      } catch (e) {
-        const menuData = menuId ? mockMenus[menuId] || mockMenus['demo'] : mockMenus['demo'];
-        setMenu(menuData);
-        setExpandedCategories(menuData.categories.map(c => c.id));
+      }
+    }
+    
+    // Fallback to currentMenu if not found by ID
+    if (!savedMenu) {
+      const currentMenu = localStorage.getItem('currentMenu');
+      if (currentMenu) {
+        try {
+          savedMenu = JSON.parse(currentMenu);
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+    
+    if (savedMenu) {
+      savedMenu.createdAt = new Date(savedMenu.createdAt);
+      savedMenu.updatedAt = new Date(savedMenu.updatedAt);
+      setMenu(savedMenu);
+      setExpandedCategories(savedMenu.categories.map((c: any) => c.id));
+      
+      // 检查是否首次访问
+      const hasSelectedLang = sessionStorage.getItem('customerLangSelected');
+      if (!hasSelectedLang) {
         setShowLangPrompt(true);
+      } else {
+        const savedLang = sessionStorage.getItem('customerLang');
+        setCustomerLang(savedLang || savedMenu.storeLanguage || 'en');
       }
     } else {
       const menuData = menuId ? mockMenus[menuId] || mockMenus['demo'] : mockMenus['demo'];

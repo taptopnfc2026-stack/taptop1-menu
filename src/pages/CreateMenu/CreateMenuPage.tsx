@@ -1409,7 +1409,7 @@ const CreateMenuPage: React.FC = () => {
                   {t('Download QR', storeLanguage)}
                 </button>
                 <button
-                  onClick={() => window.open(`/menu/${generatedMenu.id}`, '_blank')}
+                  onClick={() => window.open(getMenuUrl(generatedMenu.id), '_blank')}
                   className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200"
                 >
                   <Eye className="w-5 h-5" />
