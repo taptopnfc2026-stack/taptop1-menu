@@ -1,7 +1,8 @@
 import type { MenuCategory, MenuItem } from '../types/menu';
 
 // Cloudflare Worker proxy URL (OpenAI API key is stored in the Worker, not in frontend)
-const AI_PROXY_URL = import.meta.env.VITE_AI_PROXY_URL || 'https://taptop-menu-ai.taptopnfc2026.workers.dev';
+// Hardcoded to ensure it always works without relying on build-time env vars
+const AI_PROXY_URL = 'https://taptop-menu-ai.taptopnfc2026.workers.dev';
 
 // Direct OpenAI API (only used as fallback for local dev without proxy)
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
