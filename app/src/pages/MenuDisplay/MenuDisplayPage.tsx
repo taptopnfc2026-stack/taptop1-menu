@@ -388,7 +388,7 @@ const MenuDisplayPage: React.FC = () => {
 
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-3">
+        <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
@@ -450,7 +450,7 @@ const MenuDisplayPage: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400" />
         )}
 
-        <div className="relative max-w-2xl mx-auto px-4 py-6">
+        <div className="relative max-w-6xl mx-auto px-4 py-6">
           <h1 className="text-2xl font-bold mb-1">{menu.storeName}</h1>
           {menu.storeAddress && (
             <p className="text-white/80 text-sm">{menu.storeAddress}</p>
@@ -529,7 +529,7 @@ const MenuDisplayPage: React.FC = () => {
       </div>
 
       {/* Menu Content */}
-      <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="max-w-6xl mx-auto px-4 py-4">
         {/* Categories */}
         <div className="space-y-3">
           {menu.categories.map((category) => (
@@ -595,7 +595,7 @@ const MenuDisplayPage: React.FC = () => {
                     // Double column layout
                     if (menu.layout === 'double') {
                       return (
-                        <div className="p-3 grid grid-cols-2 gap-3">
+                        <div className="p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                           {visibleItems.map((item) => (
                             <div
                               key={item.id}
@@ -734,7 +734,7 @@ const MenuDisplayPage: React.FC = () => {
                                   title={ag.name}
                                 >
                                   <span className="w-2.5 h-2.5">{ag.icon}</span>
-                                  <span className="hidden sm:inline">{merchantLang === 'zh' ? ag.nameZh : ag.name}</span>
+                                  <span>{merchantLang === 'zh' ? ag.nameZh : ag.name}</span>
                                 </span>
                               );
                             })}
@@ -787,7 +787,7 @@ const MenuDisplayPage: React.FC = () => {
       {/* Fixed Bottom Cart Bar - Orange Theme */}
       {cart.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-orange-100 shadow-lg z-50">
-          <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="max-w-6xl mx-auto px-4 py-3">
             <button
               onClick={() => setShowCart(true)}
               className="w-full flex items-center justify-between py-3 px-4 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl text-white"
