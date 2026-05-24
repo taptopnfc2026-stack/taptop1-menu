@@ -584,12 +584,6 @@ const CreateMenuPage: React.FC = () => {
       return;
     }
 
-    const hasApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (!hasApiKey) {
-      alert('OpenAI API key not configured. Add VITE_OPENAI_API_KEY to your .env file.\n\nGet a key at: https://platform.openai.com/api-keys');
-      return;
-    }
-
     setIsAnalyzing(true);
     setAnalyzeProgress(0);
     setAiProgressMessage(t('Processing...', storeLanguage));
