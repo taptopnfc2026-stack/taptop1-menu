@@ -20,7 +20,9 @@ import {
   Link as LinkIcon,
   History,
   Image as ImageIcon,
-  Edit3
+  Edit3,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useAuth } from '@/context/AuthContext';
@@ -113,6 +115,13 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Edit Menu': 'Edit Menu',
     'Upload Image': 'Upload Image',
     'Item Image': 'Item Image',
+    'Menu Image': 'Menu Image',
+    'Menu Image Desc': 'Customize your menu, upload an image of your restaurant or select a default image.',
+    'Select from defaults': 'Select from defaults',
+    'Layout': 'Layout',
+    'Single Column': 'Single Column',
+    'Double Column': 'Double Column',
+    'Save': 'Save',
   },
   zh: {
     'Create Digital Menu': '创建电子菜单',
@@ -172,6 +181,13 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Edit Menu': '编辑菜单',
     'Upload Image': '上传图片',
     'Item Image': '菜品图片',
+    'Menu Image': '菜单图片',
+    'Menu Image Desc': '自定义您的菜单，上传餐厅图片或选择默认图片。',
+    'Select from defaults': '选择默认图片',
+    'Layout': '展示布局',
+    'Single Column': '单排展示',
+    'Double Column': '双排展示',
+    'Save': '保存',
   },
   fr: {
     'Create Digital Menu': 'Créer un menu numérique',
@@ -231,6 +247,13 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Edit Menu': 'Modifier',
     'Upload Image': 'Télécharger image',
     'Item Image': 'Image de l\'article',
+    'Menu Image': 'Image du menu',
+    'Menu Image Desc': 'Personnalisez votre menu, téléchargez une image ou sélectionnez une image par défaut.',
+    'Select from defaults': 'Sélectionner',
+    'Layout': 'Mise en page',
+    'Single Column': 'Colonne unique',
+    'Double Column': 'Deux colonnes',
+    'Save': 'Enregistrer',
   },
   de: {
     'Create Digital Menu': 'Digitales Menü erstellen',
@@ -290,6 +313,13 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Edit Menu': 'Bearbeiten',
     'Upload Image': 'Bild hochladen',
     'Item Image': 'Artikelbild',
+    'Menu Image': 'Menübild',
+    'Menu Image Desc': 'Passen Sie Ihr Menü an, laden Sie ein Bild hoch oder wählen Sie ein Standardbild.',
+    'Select from defaults': 'Auswahl',
+    'Layout': 'Layout',
+    'Single Column': 'Einspaltig',
+    'Double Column': 'Zweispaltig',
+    'Save': 'Speichern',
   },
   es: {
     'Create Digital Menu': 'Crear menú digital',
@@ -349,6 +379,13 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Edit Menu': 'Editar',
     'Upload Image': 'Subir imagen',
     'Item Image': 'Imagen del artículo',
+    'Menu Image': 'Imagen del menú',
+    'Menu Image Desc': 'Personaliza tu menú, sube una imagen o selecciona una imagen predeterminada.',
+    'Select from defaults': 'Seleccionar',
+    'Layout': 'Diseño',
+    'Single Column': 'Columna única',
+    'Double Column': 'Dos columnas',
+    'Save': 'Guardar',
   },
   ja: {
     'Create Digital Menu': 'デジタルメニュー作成',
@@ -408,6 +445,13 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Edit Menu': '編集',
     'Upload Image': '画像をアップロード',
     'Item Image': 'アイテム画像',
+    'Menu Image': 'メニュー画像',
+    'Menu Image Desc': 'メニューをカスタマイズし、レストランの画像をアップロードするか、デフォルトの画像を選択してください。',
+    'Select from defaults': 'デフォルトから選択',
+    'Layout': 'レイアウト',
+    'Single Column': '1列表示',
+    'Double Column': '2列表示',
+    'Save': '保存',
   },
   ko: {
     'Create Digital Menu': '디지털 메뉴 만들기',
@@ -467,6 +511,13 @@ const pageTranslations: Record<string, Record<string, string>> = {
     'Edit Menu': '편집',
     'Upload Image': '이미지 업로드',
     'Item Image': '아이템 이미지',
+    'Menu Image': '메뉴 이미지',
+    'Menu Image Desc': '메뉴를 사용자 정의하고 레스토랑 이미지를 업로드하거나 기본 이미지를 선택하세요.',
+    'Select from defaults': '기본 이미지 선택',
+    'Layout': '레이아웃',
+    'Single Column': '한 줄 표시',
+    'Double Column': '두 줄 표시',
+    'Save': '저장',
   },
 };
 
@@ -487,6 +538,14 @@ interface MenuHistoryItem {
   qrLink: string;
   createdAt: string;
 }
+
+// Default reference images for menu cover
+const DEFAULT_MENU_IMAGES = [
+  'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=600&h=400&fit=crop',
+];
 
 const CreateMenuPage: React.FC = () => {
   const navigate = useNavigate();
@@ -509,6 +568,11 @@ const CreateMenuPage: React.FC = () => {
   const [showCurrencySelector, setShowCurrencySelector] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeProgress, setAnalyzeProgress] = useState(0);
+
+  // Menu cover image & layout
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<'single' | 'double'>('single');
+  const coverImageInputRef = useRef<HTMLInputElement>(null);
 
   // Menu data
   const [categories, setCategories] = useState<MenuCategory[]>([]);
@@ -573,6 +637,21 @@ const CreateMenuPage: React.FC = () => {
     reader.onloadend = () => {
       const base64 = reader.result as string;
       setUploadedImage(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle cover image upload
+  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image too large. Please use an image under 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCoverImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -748,6 +827,8 @@ const CreateMenuPage: React.FC = () => {
           setStoreAddress(parsed.storeAddress || '');
           setStoreLanguage(parsed.storeLanguage || 'en');
           setStoreCurrency(parsed.storeCurrency || 'USD');
+          setCoverImage(parsed.coverImage || null);
+          setLayoutMode(parsed.layout || 'single');
           setCategories(parsed.categories || []);
           setExpandedCategories((parsed.categories || []).map((c: any) => c.id));
           setGeneratedMenu(parsed);
@@ -773,6 +854,8 @@ const CreateMenuPage: React.FC = () => {
       storeAddress,
       storeLanguage,
       storeCurrency,
+      coverImage: coverImage || undefined,
+      layout: layoutMode,
       categories,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -808,6 +891,8 @@ const CreateMenuPage: React.FC = () => {
       storeAddress,
       storeLanguage,
       storeCurrency,
+      coverImage: coverImage || undefined,
+      layout: layoutMode,
       categories,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -1030,6 +1115,90 @@ const CreateMenuPage: React.FC = () => {
                 placeholder={t('Enter store address', storeLanguage)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Menu Cover Image */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-1">{t('Menu Image', storeLanguage)}</h3>
+          <p className="text-sm text-gray-500 mb-5">{t('Menu Image Desc', storeLanguage)}</p>
+
+          {/* Preview */}
+          <div className="flex justify-center mb-5">
+            <div className="relative w-48 h-32 rounded-2xl overflow-hidden border-2 border-gray-200 bg-gray-100">
+              {coverImage ? (
+                <img src={coverImage} alt="Menu cover" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <ImageIcon className="w-10 h-10" />
+                </div>
+              )}
+              {coverImage && (
+                <button
+                  onClick={() => setCoverImage(null)}
+                  className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Upload + Default Images */}
+          <div className="flex items-center gap-3 overflow-x-auto pb-2">
+            <button
+              onClick={() => coverImageInputRef.current?.click()}
+              className="flex-shrink-0 w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-colors"
+            >
+              <Plus className="w-6 h-6 text-gray-400" />
+            </button>
+            <input
+              ref={coverImageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCoverImageUpload}
+            />
+            {DEFAULT_MENU_IMAGES.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCoverImage(img)}
+                className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors ${
+                  coverImage === img ? 'border-orange-500 ring-2 ring-orange-200' : 'border-transparent hover:border-gray-300'
+                }`}
+              >
+                <img src={img} alt={`Default ${idx + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+
+          {/* Layout Selection */}
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t('Layout', storeLanguage)}</label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setLayoutMode('single')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                  layoutMode === 'single'
+                    ? 'border-orange-500 bg-orange-50 text-orange-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <List className="w-5 h-5" />
+                <span className="text-sm font-medium">{t('Single Column', storeLanguage)}</span>
+              </button>
+              <button
+                onClick={() => setLayoutMode('double')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                  layoutMode === 'double'
+                    ? 'border-orange-500 bg-orange-50 text-orange-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <LayoutGrid className="w-5 h-5" />
+                <span className="text-sm font-medium">{t('Double Column', storeLanguage)}</span>
+              </button>
             </div>
           </div>
         </div>

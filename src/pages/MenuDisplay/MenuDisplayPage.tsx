@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   ShoppingCart,
   MessageSquare,
-  Languages
+  Languages,
+  Filter,
 } from 'lucide-react';
 import type { Menu, MenuItem } from '../../types/menu';
 import { supportedLanguages, currencies } from '../../types/menu';
@@ -48,6 +49,7 @@ const labels: Record<string, Record<string, string>> = {
   close: { en: 'Close', zh: '关闭', ja: '閉じる', ko: '닫기', es: 'Cerrar', fr: 'Fermer', de: 'Schließen', pt: 'Fechar', ar: 'إغلاق' },
   done: { en: 'Done', zh: '完成', ja: '完了', ko: '완료', es: 'Hecho', fr: 'Terminé', de: 'Fertig', pt: 'Feito', ar: 'تم' },
   language: { en: 'Language', zh: '语言', ja: '言語', ko: '언어', es: 'Idioma', fr: 'Langue', de: 'Sprache', pt: 'Idioma', ar: 'اللغة' },
+  filterBy: { en: 'Filter by', zh: '快速筛选', ja: 'フィルター', ko: '필터', es: 'Filtrar por', fr: 'Filtrer par', de: 'Filtern nach', pt: 'Filtrar por', ar: 'تصفية حسب' },
 };
 
 // Get UI label based on current language (default to English)
@@ -120,6 +122,68 @@ const MenuDisplayPage: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [customerNotes, setCustomerNotes] = useState('');
   const [showOrderSummary, setShowOrderSummary] = useState(false);
+
+  // Quick filter states
+  const [excludedAllergens, setExcludedAllergens] = useState<string[]>([]);
+  const [includedTags, setIncludedTags] = useState<string[]>([]);
+
+  const toggleExcludedAllergen = (id: string) => {
+    setExcludedAllergens(prev =>
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
+  };
+
+  const toggleIncludedTag = (id: string) => {
+    setIncludedTags(prev =>
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
+
+  const clearFilters = () => {
+    setExcludedAllergens([]);
+    setIncludedTags([]);
+  };
+
+  const isItemVisible = (item: MenuItem): boolean => {
+    // Exclude items containing selected allergens
+    if (excludedAllergens.length > 0 && item.allergens) {
+      const hasExcluded = item.allergens.some(a => excludedAllergens.includes(a));
+      if (hasExcluded) return false;
+    }
+    // Only show items matching selected dietary preferences
+    if (includedTags.length > 0 && item.tags) {
+      const hasIncluded = item.tags.some(t => includedTags.includes(t));
+      if (!hasIncluded) return false;
+    }
+    return true;
+  };
+
+  const hasActiveFilters = excludedAllergens.length > 0 || includedTags.length > 0;
+
+  // Quick allergen filters (most common)
+  const quickAllergens = ['peanuts', 'nuts', 'milk', 'eggs', 'soybeans', 'gluten', 'fish', 'crustaceans', 'sesame'];
+  // Quick dietary preference filters
+  const quickDietary = ['vegetarian', 'vegan', 'halal', 'gluten-free', 'dairy-free', 'spicy'];
+
+  const getAllergenDisplayName = (allergen: any, lang: string) => {
+    switch (lang) {
+      case 'zh': return allergen.nameZh;
+      case 'es': return allergen.nameEs;
+      case 'fr': return allergen.nameFr;
+      case 'de': return allergen.nameDe;
+      default: return allergen.name;
+    }
+  };
+
+  const getTagDisplayLabel = (tag: any, lang: string) => {
+    switch (lang) {
+      case 'zh': return tag.labelZh;
+      case 'es': return tag.labelEs;
+      case 'fr': return tag.labelFr;
+      case 'de': return tag.labelDe;
+      default: return tag.label;
+    }
+  };
 
   useEffect(() => {
     // Try to load menu by menuId first
@@ -372,9 +436,21 @@ const MenuDisplayPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Store Info - Orange Theme */}
-      <div className="bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400 text-white">
-        <div className="max-w-2xl mx-auto px-4 py-6">
+      {/* Store Info - with Cover Image Background */}
+      <div className="relative text-white">
+        {/* Background Layer */}
+        {menu.coverImage ? (
+          <>
+            <div className="absolute inset-0">
+              <img src={menu.coverImage} alt="Menu cover" className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute inset-0 bg-black/50" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400" />
+        )}
+
+        <div className="relative max-w-2xl mx-auto px-4 py-6">
           <h1 className="text-2xl font-bold mb-1">{menu.storeName}</h1>
           {menu.storeAddress && (
             <p className="text-white/80 text-sm">{menu.storeAddress}</p>
@@ -389,6 +465,65 @@ const MenuDisplayPage: React.FC = () => {
                 <span>🌐</span> {currentLang.flag} {currentLang.nativeName}
               </span>
             )}
+          </div>
+
+          {/* Quick Filters */}
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Filter className="w-3.5 h-3.5 text-white/70" />
+              <span className="text-xs text-white/70 font-medium">
+                {getLabel('filterBy', customerLang || merchantLang)}
+              </span>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-white/90 underline hover:text-white ml-auto"
+                >
+                  {customerLang === 'zh' ? '清除筛选' : 'Clear'}
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
+              {/* Allergen exclusions */}
+              {quickAllergens.map(aid => {
+                const ag = EU_ALLERGENS.find(a => a.id === aid);
+                if (!ag) return null;
+                const isActive = excludedAllergens.includes(aid);
+                return (
+                  <button
+                    key={aid}
+                    onClick={() => toggleExcludedAllergen(aid)}
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1 transition-all border ${
+                      isActive
+                        ? 'bg-red-500 text-white border-red-400 shadow-md'
+                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
+                    }`}
+                  >
+                    <span className="w-3 h-3 opacity-90">{ag.icon}</span>
+                    {getAllergenDisplayName(ag, customerLang || merchantLang).split(' ')[0].split('/')[0]}
+                  </button>
+                );
+              })}
+              {/* Dietary preferences */}
+              {quickDietary.map(tid => {
+                const tagDef = TAG_GROUPS.flatMap(g => g.tags).find(t => t.id === tid);
+                if (!tagDef) return null;
+                const isActive = includedTags.includes(tid);
+                return (
+                  <button
+                    key={tid}
+                    onClick={() => toggleIncludedTag(tid)}
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1 transition-all border ${
+                      isActive
+                        ? 'bg-green-500 text-white border-green-400 shadow-md'
+                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
+                    }`}
+                  >
+                    {getTagDisplayLabel(tagDef, customerLang || merchantLang)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -428,7 +563,9 @@ const MenuDisplayPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                    {category.items.length}
+                    {hasActiveFilters
+                      ? `${category.items.filter(isItemVisible).length}/${category.items.length}`
+                      : category.items.length}
                   </span>
                   <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${expandedCategories.includes(category.id) ? 'rotate-180' : ''}`} />
                 </div>
@@ -437,10 +574,121 @@ const MenuDisplayPage: React.FC = () => {
               {/* Category Items */}
               {expandedCategories.includes(category.id) && (
                 <div className="border-t border-gray-100">
-                  {category.items.map((item, idx) => (
-                    <div 
-                      key={item.id} 
-                      className={`px-4 py-3.5 flex items-center gap-3 ${idx !== category.items.length - 1 ? 'border-b border-gray-100' : ''}`}
+                  {(() => {
+                    const visibleItems = category.items.filter(isItemVisible);
+                    if (visibleItems.length === 0) {
+                      return (
+                        <div className="px-4 py-8 text-center">
+                          <p className="text-sm text-gray-400">
+                            {customerLang === 'zh' ? '没有符合筛选条件的菜品' : 'No items match your filters'}
+                          </p>
+                          <button
+                            onClick={clearFilters}
+                            className="mt-2 text-xs text-orange-500 font-medium hover:underline"
+                          >
+                            {customerLang === 'zh' ? '清除筛选' : 'Clear filters'}
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    // Double column layout
+                    if (menu.layout === 'double') {
+                      return (
+                        <div className="p-3 grid grid-cols-2 gap-3">
+                          {visibleItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm"
+                            >
+                              {/* Item Image */}
+                              <div className="relative w-full aspect-[4/3] bg-gray-100">
+                                {item.image ? (
+                                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <UtensilsCrossed className="w-8 h-8 text-gray-300" />
+                                  </div>
+                                )}
+                                {/* Add Button */}
+                                <button
+                                  onClick={() => addToCart(item, getCategoryName(category, customerLang || merchantLang))}
+                                  className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full shadow-md hover:bg-orange-50 active:scale-95 transition-all flex items-center justify-center"
+                                >
+                                  <Plus className="w-4 h-4 text-orange-500" />
+                                </button>
+                              </div>
+                              {/* Item Info */}
+                              <div className="p-2.5">
+                                <div className="flex items-start justify-between gap-1">
+                                  <h3 className="font-medium text-gray-900 text-sm leading-snug line-clamp-2 flex-1">
+                                    {showBilingual
+                                      ? getItemName(item, customerLang)
+                                      : getItemName(item, customerLang || merchantLang)}
+                                  </h3>
+                                </div>
+                                {showBilingual && (
+                                  <p className="text-[10px] text-orange-400 mt-0.5 truncate">
+                                    {getItemName(item, merchantLang)}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                  {getItemDescription(item, customerLang || merchantLang)}
+                                </p>
+                                <span className="block mt-1.5 font-semibold text-orange-500 text-sm">
+                                  {currency.symbol}{item.price.toFixed(0)}
+                                </span>
+                                {/* Allergens */}
+                                {item.allergens && item.allergens.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {item.allergens.map(aid => {
+                                      const ag = EU_ALLERGENS.find(a => a.id === aid);
+                                      if (!ag) return null;
+                                      return (
+                                        <span
+                                          key={aid}
+                                          className="inline-flex items-center gap-0.5 px-1 py-0.5 text-[10px] font-medium rounded"
+                                          style={{ color: ag.color, backgroundColor: ag.bgColor }}
+                                          title={ag.name}
+                                        >
+                                          <span className="w-2.5 h-2.5">{ag.icon}</span>
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                                {/* Tags */}
+                                {item.tags && item.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {item.tags.map(tid => {
+                                      const tagDef = TAG_GROUPS.flatMap(g => g.tags).find(t => t.id === tid);
+                                      if (tagDef) {
+                                        return (
+                                          <span
+                                            key={tid}
+                                            className="px-1.5 py-0.5 text-[10px] font-medium rounded border"
+                                            style={{ color: tagDef.color, backgroundColor: tagDef.bgColor, borderColor: tagDef.borderColor }}
+                                          >
+                                            {merchantLang === 'zh' ? tagDef.labelZh : tagDef.label}
+                                          </span>
+                                        );
+                                      }
+                                      return null;
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    // Single column layout (default)
+                    return visibleItems.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className={`px-4 py-3.5 flex items-center gap-3 ${idx !== visibleItems.length - 1 ? 'border-b border-gray-100' : ''}`}
                     >
                       {/* Item Image */}
                       <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
@@ -452,7 +700,7 @@ const MenuDisplayPage: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Item Info - Bilingual */}
                       <div className="flex-1 min-w-0">
                         {showBilingual ? (
@@ -527,7 +775,8 @@ const MenuDisplayPage: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               )}
             </div>

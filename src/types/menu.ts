@@ -31,6 +31,8 @@ export interface Menu {
   storeAddress?: string;
   storeLanguage?: string;
   storeCurrency?: string;
+  coverImage?: string;
+  layout?: 'single' | 'double';
   categories: MenuCategory[];
   createdAt: Date;
   updatedAt: Date;
