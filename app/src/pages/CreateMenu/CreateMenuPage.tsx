@@ -1396,7 +1396,7 @@ const CreateMenuPage: React.FC = () => {
                                       title={ag.name}
                                     >
                                       <span className="w-3 h-3">{ag.icon}</span>
-                                      <span className="hidden sm:inline">{storeLanguage === 'zh' ? ag.nameZh : ag.name}</span>
+                                      <span>{storeLanguage === 'zh' ? ag.nameZh : ag.name}</span>
                                     </span>
                                   );
                                 })}

@@ -194,11 +194,11 @@ export function HomePage() {
               </div>
             </div>
 
-            {/* Right Visual - Desktop Only */}
-            <div className="relative hidden lg:block">
-              <div className="relative">
+            {/* Right Visual - All Screens */}
+            <div className="relative mt-10 lg:mt-0 flex justify-center">
+              <div className="relative w-64 lg:w-full h-[420px] lg:h-[520px]">
                 {/* Main Phone */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-[580px] bg-gradient-to-b from-gray-900 to-gray-800 rounded-[3rem] border-4 border-gray-700 shadow-2xl shadow-purple-500/20 overflow-hidden z-10">
+                <div className="relative lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 w-52 lg:w-72 h-[400px] lg:h-[580px] bg-gradient-to-b from-gray-900 to-gray-800 rounded-[2.5rem] lg:rounded-[3rem] border-4 border-gray-700 shadow-2xl shadow-purple-500/20 overflow-hidden z-10 mx-auto">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-gray-900 rounded-b-2xl" />
                   <div className="h-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 p-5 pt-12">
                     {/* Mock Menu UI */}
@@ -242,8 +242,8 @@ export function HomePage() {
                   </div>
                 </div>
 
-                {/* Floating Cards */}
-                <div className="absolute -top-4 -left-8 bg-white rounded-2xl p-4 shadow-2xl z-20 animate-float">
+                {/* Floating Cards - Desktop Only */}
+                <div className="absolute -top-4 -left-8 bg-white rounded-2xl p-4 shadow-2xl z-20 animate-float hidden lg:block">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-400 flex items-center justify-center shadow-lg">
                       <CheckCircle2 className="w-6 h-6 text-white" />
@@ -255,7 +255,7 @@ export function HomePage() {
                   </div>
                 </div>
 
-                <div className="absolute top-1/4 -right-12 bg-white rounded-2xl p-4 shadow-2xl z-20 animate-float" style={{ animationDelay: '0.5s' }}>
+                <div className="absolute top-1/4 -right-12 bg-white rounded-2xl p-4 shadow-2xl z-20 animate-float hidden lg:block" style={{ animationDelay: '0.5s' }}>
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-400 flex items-center justify-center shadow-lg">
                       <Scan className="w-6 h-6 text-white" />
@@ -267,7 +267,7 @@ export function HomePage() {
                   </div>
                 </div>
 
-                <div className="absolute -bottom-4 right-8 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-2xl p-4 shadow-2xl z-20 animate-float" style={{ animationDelay: '1s' }}>
+                <div className="absolute -bottom-4 right-8 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-2xl p-4 shadow-2xl z-20 animate-float hidden lg:block" style={{ animationDelay: '1s' }}>
                   <div className="text-center text-white">
                     <p className="text-2xl font-bold">4.9</p>
                     <div className="flex justify-center gap-0.5 mt-1">
@@ -279,8 +279,8 @@ export function HomePage() {
                   </div>
                 </div>
 
-                {/* Decorative Elements */}
-                <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-violet-200/50 via-purple-200/30 to-fuchsia-200/50 rounded-full blur-3xl" />
+                {/* Decorative Elements - Desktop Only */}
+                <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-violet-200/50 via-purple-200/30 to-fuchsia-200/50 rounded-full blur-3xl hidden lg:block" />
               </div>
             </div>
           </div>
@@ -314,7 +314,7 @@ export function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Everything You Need
             </h2>
-            <p className="text-base text-gray-600 max-w-2xl mx-auto px-2">
+            <p className="text-base text-gray-600 max-w-4xl mx-auto px-2">
               Powerful AI tools to transform how customers interact with your business
             </p>
           </div>
@@ -334,7 +334,7 @@ export function HomePage() {
                 </div>
                 
                 <h3 className="text-sm sm:text-base md:text-xl font-bold text-gray-900 mb-1 sm:mb-2">{action.label}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-4 hidden sm:block">{action.desc}</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-4">{action.desc}</p>
                 
                 <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold">
                   <span className={`bg-gradient-to-r ${action.gradient} bg-clip-text text-transparent`}>
@@ -358,7 +358,7 @@ export function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Built for Modern Business
             </h2>
-            <p className="text-base text-gray-600 max-w-2xl mx-auto px-2">
+            <p className="text-base text-gray-600 max-w-4xl mx-auto px-2">
               Powerful features that help you create exceptional customer experiences
             </p>
           </div>
@@ -398,7 +398,7 @@ export function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
               Works for Every Industry
             </h2>
-            <p className="text-base text-white/80 max-w-2xl mx-auto px-2">
+            <p className="text-base text-white/80 max-w-4xl mx-auto px-2">
               Tailored solutions for your specific business needs
             </p>
           </div>
@@ -416,7 +416,7 @@ export function HomePage() {
                   </div>
                   <div>
                     <h3 className="text-sm sm:text-base md:text-lg font-bold text-white">{template.name}</h3>
-                    <p className="text-xs sm:text-sm text-white/70 hidden sm:block">Industry Template</p>
+                    <p className="text-xs sm:text-sm text-white/70">Industry Template</p>
                   </div>
                 </div>
               </div>
@@ -435,7 +435,7 @@ export function HomePage() {
                   <benefit.icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-violet-600" />
                 </div>
                 <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 sm:mb-2">{benefit.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">{benefit.description}</p>
+                <p className="text-xs sm:text-sm text-gray-600">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -452,7 +452,7 @@ export function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Loved by Businesses
             </h2>
-            <p className="text-base text-gray-600 max-w-2xl mx-auto px-2">
+            <p className="text-base text-gray-600 max-w-4xl mx-auto px-2">
               See what our customers have to say about Taptop Menu
             </p>
           </div>
@@ -506,7 +506,7 @@ export function HomePage() {
             </span>
           </h2>
           
-          <p className="text-base sm:text-lg text-gray-300 mb-8 sm:mb-10 max-w-2xl mx-auto px-2">
+          <p className="text-base sm:text-lg text-gray-300 mb-8 sm:mb-10 max-w-4xl mx-auto px-2">
             Join thousands of businesses using Taptop Menu to create exceptional digital experiences
           </p>
           
@@ -540,7 +540,7 @@ export function HomePage() {
                 </div>
                 <span className="text-lg sm:text-xl font-bold text-white">Taptop Menu</span>
               </Link>
-              <p className="text-sm leading-relaxed hidden sm:block">
+              <p className="text-sm leading-relaxed">
                 Transform your business with AI-powered digital menus and smart QR codes.
               </p>
             </div>

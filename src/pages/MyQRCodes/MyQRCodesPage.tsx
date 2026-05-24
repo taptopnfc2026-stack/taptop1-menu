@@ -64,7 +64,7 @@ export function MyQRCodesPage() {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-medium rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all cursor-pointer"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Create QR</span>
+            <span>Create QR</span>
           </Link>
         </div>
 

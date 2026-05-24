@@ -331,7 +331,7 @@ export function CreateQRPage() {
     <div className="min-h-screen">
       <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-white to-cyan-50" />
       
-      <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
@@ -693,7 +693,7 @@ export function CreateQRPage() {
                           <span className="text-sm font-medium text-gray-700 truncate">
                             {redirect.name}
                           </span>
-                          <span className="text-xs text-gray-400 truncate hidden sm:inline">
+                          <span className="text-xs text-gray-400 truncate">
                             {redirect.url}
                           </span>
                         </div>
